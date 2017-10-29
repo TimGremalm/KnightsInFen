@@ -9,8 +9,11 @@ namespace KnightsInFen {
 		BoardMove Parent = null;
 		public List<BoardMove> AvailableMoves = new List<BoardMove>();
 		public List<BoardMove> ValidMoves = new List<BoardMove>();
-		public List<List<char>> Board = new List<List<char>>();
+		public List<List<char>> Board = new List<List<char>>();	//Stores the position of pieces here
 		public int Generation;
+		public int ShortestPathItemNo = -1;             //Init as -1 (out of range), this will be set when we find new valid board moves
+		public int ShortestPathSteps = int.MaxValue;    //Init as huge, this will decrease when we find new valid board moves
+
 		private const string FinishedLook =	"11111\n" +
 											"01111\n" +
 											"00 11\n" +
@@ -87,6 +90,20 @@ namespace KnightsInFen {
 				}
 			}
 		}
+
+		public void CalculateValidBoardMoves() {
+			foreach(BoardMove move in AvailableMoves) {
+				//Todo: Check previous BoardMoves so we don't get any duplicates
+
+				//Check that max generation isn't reached
+				if (move.Generation < MaxNumberOfMoves) {
+					ValidMoves.Add(move);
+				}
+			}
+
+			//Walk up through parents and check if this generation is shorter then previous
+			//If shorter, set ShortestPath ItemNo and Steps for parent
+		}
 	}
 	class Program {
 		static void Main(string[] args) {
@@ -96,6 +113,12 @@ namespace KnightsInFen {
 									"01010\n" +
 									"00100");
 			a.CalculateAvailableBoardMoves();
+			a.CalculateValidBoardMoves();
+
+			foreach (BoardMove move in a.ValidMoves) {
+				move.CalculateAvailableBoardMoves();
+				move.CalculateValidBoardMoves();
+			}
 
 			Console.WriteLine(a);
 			Console.ReadLine();
