@@ -11,6 +11,7 @@ namespace KnightsInFen {
 		public List<BoardMove> ValidMoves = new List<BoardMove>();
 		public List<List<char>> Board = new List<List<char>>();	//Stores the position of pieces here
 		public int Generation;
+		public bool Finished;
 		public int ShortestPathItemNo = -1;             //Init as -1 (out of range), this will be set when we find new valid board moves
 		public int ShortestPathSteps = int.MaxValue;    //Init as huge, this will decrease when we find new valid board moves
 
@@ -18,7 +19,7 @@ namespace KnightsInFen {
 											"01111\n" +
 											"00 11\n" +
 											"00001\n" +
-											"00000\n";
+											"00000";
 		private const int MaxNumberOfMoves = 10;
 
 		public BoardMove (string Layout) {
@@ -98,11 +99,32 @@ namespace KnightsInFen {
 				//Check that max generation isn't reached
 				if (move.Generation < MaxNumberOfMoves) {
 					ValidMoves.Add(move);
+					string a = TextRepresentationOfBoard(move.Board);
+					if (TextRepresentationOfBoard(move.Board).Equals(FinishedLook)) {
+						move.Finished = true;
+					}
+					if (move.Finished) {
+						move.SetShortestPath();
+					}
 				}
 			}
 
+		}
+		private void SetShortestPath() {
 			//Walk up through parents and check if this generation is shorter then previous
 			//If shorter, set ShortestPath ItemNo and Steps for parent
+			BoardMove parentBoardMove = this;
+			BoardMove previousBoardMove = this;
+			while (parentBoardMove.Generation != 0) {
+				parentBoardMove = parentBoardMove.Parent;
+
+				if (this.Generation < parentBoardMove.ShortestPathSteps) {
+					parentBoardMove.ShortestPathSteps = this.Generation;
+					parentBoardMove.ShortestPathItemNo = parentBoardMove.ValidMoves.IndexOf(previousBoardMove);
+				}
+
+				previousBoardMove = parentBoardMove;	//For later use, and easy access
+			}
 		}
 	}
 	class Program {
@@ -112,6 +134,11 @@ namespace KnightsInFen {
 									"01110\n" +
 									"01010\n" +
 									"00100");
+			a = new BoardMove(		"11111\n" +
+									"0111 \n" +
+									"00111\n" +
+									"00001\n" +
+									"00000");
 			a.CalculateAvailableBoardMoves();
 			a.CalculateValidBoardMoves();
 
