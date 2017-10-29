@@ -55,10 +55,10 @@ namespace KnightsInFen {
 							int iToRow = i + legal.Item1;
 							int iToCol = j + legal.Item2;
 
-							//Is move inside range?
+							//Is move inside range of the board?
 							if (iToRow >= 0 && iToRow < Board.Count &&
 								iToCol >= 0 && iToCol < Board[0].Count) {
-								//Is move going to a space?
+								//Is move going to be a space?
 								if (Board[iToRow][iToCol] == 32) {
 									Console.WriteLine("Doable");
 								}
