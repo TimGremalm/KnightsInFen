@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace KnightsInFen {
 	public class BoardMove {
+		BoardMove Root = null;
 		BoardMove Parent = null;
 		public List<BoardMove> ValidMoves = new List<BoardMove>();
 		public List<List<char>> Board = new List<List<char>>();	//Stores the position of pieces here
@@ -30,6 +31,11 @@ namespace KnightsInFen {
 		private void InitBoardMove(BoardMove parent, int generation, string Layout, bool finished) {
 			Parent = parent;
 			Generation = generation;
+			if (Generation == 0) {
+				Root = this;
+			} else {
+				Root = Parent.Root;
+			}
 			Board = ReadLayout(Layout);
 			Finished = finished;
 			if (Finished) {
@@ -37,6 +43,7 @@ namespace KnightsInFen {
 			}
 			CalculateAvailableBoardMoves();
 		}
+
 		private List<List<char>> ReadLayout(string Layout) {
 			List<List<char>> boardOut = new List<List<char>>();
 			var lines = Layout.Split(new string[] { "\n" }, StringSplitOptions.None);
@@ -49,12 +56,14 @@ namespace KnightsInFen {
 			}
 			return boardOut;
 		}
+
 		private string TextRepresentationOfBoard(List<List<char>> BoardRepresent) {
 			return string.Join("\n", BoardRepresent.Select(r => String.Join("", r.Select(c => c.ToString()))));
 		}
 		public override string ToString() {
 			return TextRepresentationOfBoard(Board);
 		}
+
 		private void MakeAMoveAndStore(int pieceToMoveRow, int pieceToMoveCol, int moveToRow, int moveToCol) {
 			char typeOfCharacterToMove = Board[pieceToMoveRow][pieceToMoveCol];
 
@@ -64,8 +73,30 @@ namespace KnightsInFen {
 
 			bool isNewBoardFinished = (TextRepresentationOfBoard(newBoard).Equals(FinishedLook));
 
+			//Todo: Check previous BoardMoves so we don't get any duplicates
+			if(IsDuplicateBoard(TextRepresentationOfBoard(newBoard), Root)) {
+				return;
+			}
+
 			ValidMoves.Add(new BoardMove(this, Generation + 1, TextRepresentationOfBoard(newBoard), isNewBoardFinished));
 		}
+
+		private bool IsDuplicateBoard(string newBoard, BoardMove node) {
+			foreach(BoardMove sub in node.ValidMoves) {
+				//If found duplicate, report back
+				if (newBoard.Equals(TextRepresentationOfBoard(sub.Board))) {
+					return true;
+				}
+
+				//Check cildrens children recursivly
+				if (IsDuplicateBoard(newBoard, sub)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
 		public void CalculateAvailableBoardMoves() {
 			List<Tuple<int, int>> legalMoves = new List < Tuple < int, int>>{	new Tuple<int,int>(-2, -1),
 																				new Tuple<int,int>(-2, 1),
@@ -81,8 +112,6 @@ namespace KnightsInFen {
 			if (Generation == MaxNumberOfMoves) {
 				return;
 			}
-
-			//Todo: Check previous BoardMoves so we don't get any duplicates
 
 			//Walk through every board-position
 			for (int i=0; i<Board.Count; i++) {
@@ -130,7 +159,7 @@ namespace KnightsInFen {
 	}
 	class Program {
 		static void Main(string[] args) {
-			var a = new BoardMove("01011\n" +
+			var a = new BoardMove(	"01011\n" +
 									"110 1\n" +
 									"01110\n" +
 									"01010\n" +
