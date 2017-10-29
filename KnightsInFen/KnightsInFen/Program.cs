@@ -23,10 +23,12 @@ namespace KnightsInFen {
 		private const int MaxNumberOfMoves = 10;
 
 		public BoardMove (string Layout) {
-			Generation = 0;
-			ReadLayout(Layout);
+			InitBoardMove(null, 0, Layout);
 		}
-		public BoardMove (BoardMove parent, int generation, string Layout) {
+		public BoardMove(BoardMove parent, int generation, string Layout) {
+			InitBoardMove(parent, generation, Layout);
+		}
+		private void InitBoardMove(BoardMove parent, int generation, string Layout) {
 			Parent = parent;
 			Generation = generation;
 			ReadLayout(Layout);
@@ -123,7 +125,7 @@ namespace KnightsInFen {
 					parentBoardMove.ShortestPathItemNo = parentBoardMove.ValidMoves.IndexOf(previousBoardMove);
 				}
 
-				previousBoardMove = parentBoardMove;	//For later use, and easy access
+				previousBoardMove = parentBoardMove;	//Save for the next iteration
 			}
 		}
 	}
