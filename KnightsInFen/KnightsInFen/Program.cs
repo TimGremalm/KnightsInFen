@@ -6,18 +6,25 @@ using System.Threading.Tasks;
 
 namespace KnightsInFen {
 	public class BoardMove {
-		BoardMove Parent;
+		BoardMove Parent = null;
 		public List<BoardMove> AvailableMoves = new List<BoardMove>();
 		public List<BoardMove> ValidMoves = new List<BoardMove>();
 		public List<List<char>> Board = new List<List<char>>();
 		public int Generation;
+		private const string FinishedLook =	"11111\n" +
+											"01111\n" +
+											"00 11\n" +
+											"00001\n" +
+											"00000\n";
+		private const int MaxNumberOfMoves = 10;
 
 		public BoardMove (string Layout) {
 			Generation = 0;
 			ReadLayout(Layout);
 		}
-		public BoardMove (int Gen, string Layout) {
-			Generation = Gen;
+		public BoardMove (BoardMove parent, int generation, string Layout) {
+			Parent = parent;
+			Generation = generation;
 			ReadLayout(Layout);
 		}
 		private void ReadLayout(string Layout) {
@@ -38,7 +45,7 @@ namespace KnightsInFen {
 		}
 		private void MakeAMoveAndStore(int pieceToMoveRow, int pieceToMoveCol, int moveToRow, int moveToCol) {
 			char typeOfCharacterToMove = Board[pieceToMoveRow][pieceToMoveCol];
-			BoardMove newMove = new BoardMove(Generation+1, TextRepresentationOfBoard(Board));
+			BoardMove newMove = new BoardMove(this, Generation+1, TextRepresentationOfBoard(Board));
 			newMove.Board[pieceToMoveRow][pieceToMoveCol] = " ".ToCharArray()[0];
 			newMove.Board[moveToRow][moveToCol] = typeOfCharacterToMove;
 			AvailableMoves.Add(newMove);
@@ -59,6 +66,7 @@ namespace KnightsInFen {
 				List<char> row = Board[i];
 				for (int j = 0; j < row.Count; j++) {
 					char col = row[j];
+					//A board piece can be anything but a space
 					if (!col.Equals(" ")) {
 						//Check which positions the knight can move
 						foreach (Tuple<int, int> legal in legalMoves) {
@@ -70,6 +78,7 @@ namespace KnightsInFen {
 								iToCol >= 0 && iToCol < Board[0].Count) {
 								//Is move going to be a space?
 								if (Board[iToRow][iToCol] == 32) {
+									//In that case it's a successful move and should be stored
 									MakeAMoveAndStore(i, j, iToRow, iToCol);
 								}
 							}
@@ -81,7 +90,11 @@ namespace KnightsInFen {
 	}
 	class Program {
 		static void Main(string[] args) {
-			var a = new BoardMove("01011\n110 1\n01110\n01010\n00100");
+			var a = new BoardMove(	"01011\n" +
+									"110 1\n" +
+									"01110\n" +
+									"01010\n" +
+									"00100");
 			a.CalculateAvailableBoardMoves();
 
 			Console.WriteLine(a);
