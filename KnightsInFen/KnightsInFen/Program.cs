@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 namespace KnightsInFen {
 	public class BoardMove {
 		BoardMove Parent;
-		public List<BoardMove> AvailableMoves;
-		public List<BoardMove> ValidMoves;
+		public List<BoardMove> AvailableMoves = new List<BoardMove>();
+		public List<BoardMove> ValidMoves = new List<BoardMove>();
 		public List<List<char>> Board = new List<List<char>>();
 		public int Generation;
 
@@ -30,8 +30,18 @@ namespace KnightsInFen {
 				Board.Add(CharList);
 			}
 		}
+		private string TextRepresentationOfBoard(List<List<char>> BoardRepresent) {
+			return string.Join("\n", BoardRepresent.Select(r => String.Join("", r.Select(c => c.ToString()))));
+		}
 		public override string ToString() {
-			return string.Join("\n", Board.Select(r => String.Join("", r.Select(c => c.ToString()))));
+			return TextRepresentationOfBoard(Board);
+		}
+		private void MakeAMoveAndStore(int pieceToMoveRow, int pieceToMoveCol, int moveToRow, int moveToCol) {
+			char typeOfCharacterToMove = Board[pieceToMoveRow][pieceToMoveCol];
+			BoardMove newMove = new BoardMove(Generation+1, TextRepresentationOfBoard(Board));
+			newMove.Board[pieceToMoveRow][pieceToMoveCol] = " ".ToCharArray()[0];
+			newMove.Board[moveToRow][moveToCol] = typeOfCharacterToMove;
+			AvailableMoves.Add(newMove);
 		}
 		public void CalculateAvailableBoardMoves() {
 			List<Tuple<int, int>> legalMoves = new List < Tuple < int, int>>{	new Tuple<int,int>(-2, -1),
@@ -60,7 +70,7 @@ namespace KnightsInFen {
 								iToCol >= 0 && iToCol < Board[0].Count) {
 								//Is move going to be a space?
 								if (Board[iToRow][iToCol] == 32) {
-									Console.WriteLine("Doable");
+									MakeAMoveAndStore(i, j, iToRow, iToCol);
 								}
 							}
 						}
